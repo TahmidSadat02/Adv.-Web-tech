@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './auth/guard/jwt.guard';
+import { RolesGuard } from './auth/guard/roles.guard';
 
 @Module({
   imports: [
@@ -37,11 +38,15 @@ import { JwtGuard } from './auth/guard/jwt.guard';
   controllers: [AppController],
   providers: [
     AppService,
-    // 3. This applies your JWT Bouncer to the whole app
+    // This applies your JWT Bouncer to the whole app
     {
       provide: APP_GUARD,
       useClass: JwtGuard,
     },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard, // This applies your Role Bouncer to the whole app
+    }
   ],
 })
 export class AppModule {}
