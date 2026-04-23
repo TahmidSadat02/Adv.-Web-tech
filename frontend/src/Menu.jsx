@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import AddMenuItem from './AddMenuItem'; // 1. Import the admin form
 
 export default function Menu() {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Fetch the public menu route we created earlier
+  // 2. Check if the user is holding an active token
+  const token = localStorage.getItem('accessToken');
+
+  // 3. Create a reusable fetch function
+  const fetchMenu = () => {
     fetch('http://localhost:3000/menu')
       .then((response) => response.json())
       .then((data) => {
@@ -16,29 +20,38 @@ export default function Menu() {
         console.error('Error fetching menu:', error);
         setLoading(false);
       });
-  }, []);
+  };
 
-  if (loading) {
-    return <div style={styles.container}>Loading menu...</div>;
-  }
+  // Run the fetch function when the page loads
+  useEffect(() => {
+    fetchMenu();
+  }, []);
 
   return (
     <div style={styles.container}>
       <h2 style={styles.header}>Our Menu</h2>
-      <div style={styles.grid}>
-        {menuItems.map((item) => (
-          <div key={item.id} style={styles.card}>
-            <h3 style={styles.title}>{item.name}</h3>
-            <p style={styles.description}>{item.description}</p>
-            <p style={styles.price}>${item.price}</p>
-          </div>
-        ))}
-      </div>
+
+      {/* 4. The Security Gate: Only render the form if the token exists */}
+      {token && <AddMenuItem onAddSuccess={fetchMenu} />}
+
+      {loading ? (
+        <div>Loading menu...</div>
+      ) : (
+        <div style={styles.grid}>
+          {menuItems.map((item) => (
+            <div key={item.id} style={styles.card}>
+              <h3 style={styles.title}>{item.name}</h3>
+              <p style={styles.description}>{item.description}</p>
+              <p style={styles.price}>${item.price}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-// Minimal, clean styling
+// Keeping your clean, professional styling exactly the same
 const styles = {
   container: {
     padding: '40px 20px',
