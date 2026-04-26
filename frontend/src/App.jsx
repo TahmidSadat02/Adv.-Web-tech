@@ -62,7 +62,7 @@ const styles = {
   navBrand: {
     fontSize: '1.5rem',
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#100f0f',
   },
   navLinks: {
     display: 'flex',
