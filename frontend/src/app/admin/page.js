@@ -1,36 +1,128 @@
 "use client";
-import { useContext, useEffect } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppContext } from '../context/AppContext';
+import api from '../lib/axios';
 import AddMenuItem from '../components/AddMenuItem';
 
 export default function AdminDashboard() {
-  const { userRole, loading, fetchMenu } = useContext(AppContext);
+  const { token, userRole, triggerNotification } = useContext(AppContext);
   const router = useRouter();
+  
+  
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   useEffect(() => {
-    if (!loading && userRole !== 'admin') {
-      router.push('/');
+    
+    if (!token || userRole !== 'admin') {
+      router.push('/login');
+      return;
     }
-  }, [userRole, loading, router]);
+    fetchOrders();
+  }, [token, userRole]);
 
   
-  if (loading || userRole !== 'admin') return null;
+  const fetchOrders = async () => {
+    try {
+      const response = await api.get('/orders');
+      setOrders(response.data);
+    } catch (error) {
+      console.error("Failed to fetch orders", error);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    try {
+      await api.patch(`/orders/${orderId}/status`, { status: newStatus });
+      triggerNotification(`Order #${orderId} is now ${newStatus.toUpperCase()}`);
+      fetchOrders(); 
+    } catch (error) {
+      triggerNotification(error.response?.data?.message || "Failed to update status");
+    }
+  };
+
+  
+  if (userRole !== 'admin') return null; 
 
   return (
     <div className="py-8">
-      <div className="mb-8 border-b border-gray-200 pb-5">
-        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Admin Dashboard</h2>
-        <p className="text-gray-600 mt-2">Manage your coffee shop menu, add items, and update prices.</p>
+      <div className="mb-10">
+        <h2 className="text-4xl font-extrabold text-gray-900 mb-2">Admin Dashboard</h2>
+        <p className="text-gray-600 font-medium">Manage your coffee shop menu, orders, and inventory.</p>
       </div>
 
-      <AddMenuItem onAddSuccess={fetchMenu} />
+      <AddMenuItem onAddSuccess={() => {}} />
 
-      <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-        <h3 className="text-xl font-bold text-gray-800 mb-2">Inventory Management</h3>
-        <p className="text-gray-500">
-          The Edit and Delete features will appear here once the PUT and DELETE routes are added to the NestJS backend.
-        </p>
+      {/* NEW: Incoming Orders Section */}
+      <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm mb-8">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Incoming Orders</h3>
+        
+        {loadingOrders ? (
+          <div className="text-gray-500 font-medium">Loading orders...</div>
+        ) : orders.length === 0 ? (
+          <div className="text-gray-500 bg-gray-50 p-6 rounded-lg border border-gray-200 text-center font-medium">
+            No orders have been placed yet.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="py-4 px-4 text-gray-900 font-bold rounded-tl-lg">Order ID</th>
+                  <th className="py-4 px-4 text-gray-900 font-bold">Customer</th>
+                  <th className="py-4 px-4 text-gray-900 font-bold">Items</th>
+                  <th className="py-4 px-4 text-gray-900 font-bold">Total</th>
+                  <th className="py-4 px-4 text-gray-900 font-bold">Status</th>
+                  <th className="py-4 px-4 text-gray-900 font-bold rounded-tr-lg">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map(order => (
+                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td className="py-4 px-4 text-gray-900 font-bold">#{order.id}</td>
+                    <td className="py-4 px-4 text-gray-700 font-medium">{order.customer?.fullName || 'Unknown'}</td>
+                    <td className="py-4 px-4 text-gray-600 text-sm">
+                      {order.items?.map(i => `${i.quantity}x ${i.menuItem?.name}`).join(', ')}
+                    </td>
+                    <td className="py-4 px-4 text-emerald-600 font-bold">${Number(order.totalPrice).toFixed(2)}</td>
+                    <td className="py-4 px-4">
+                      {/* Dynamic status pill formatting */}
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
+                        ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                          order.status === 'preparing' ? 'bg-blue-100 text-blue-800' : 
+                          order.status === 'ready' ? 'bg-emerald-100 text-emerald-800' : 
+                          'bg-gray-200 text-gray-800'}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <select 
+                        value={order.status}
+                        onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                        className="bg-white border border-gray-300 text-gray-900 text-sm font-medium rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2.5 cursor-pointer"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="preparing">Preparing</option>
+                        <option value="ready">Ready</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Inventory Management Placeholder */}
+      <div className="bg-white p-10 rounded-2xl border border-gray-200 shadow-sm text-center">
+         <h3 className="text-xl font-bold text-gray-900 mb-2">Inventory Management</h3>
+         <p className="text-gray-500 font-medium">The Edit and Delete features will appear here once the PUT and DELETE routes are added to the NestJS backend.</p>
       </div>
     </div>
   );

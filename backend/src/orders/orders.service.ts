@@ -55,4 +55,35 @@ export class OrdersService {
 
     return savedOrder;
   }
+
+  
+  async findAllOrders() {
+    return this.orderRepository.find({
+      relations: ['customer', 'items', 'items.menuItem'], 
+      order: { createdAt: 'DESC' }, 
+    });
+  }
+
+  
+  async updateOrderStatus(id: number, status: string) {
+    const order = await this.orderRepository.findOne({ 
+      where: { id },
+      relations: ['customer'] 
+    });
+    
+    if (!order) throw new NotFoundException(`Order #${id} not found`);
+
+    order.status = status as any;
+    const updatedOrder = await this.orderRepository.save(order);
+
+    
+    this.mailService.sendOrderStatusUpdate(
+      order.customer.email, 
+      order.customer.fullName || 'Customer', 
+      order.id, 
+      status
+    ).catch(err => console.error('Failed to send status email:', err));
+
+    return updatedOrder;
+  }
 }

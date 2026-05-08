@@ -1,7 +1,8 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Param, Get, Patch } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { JwtGuard } from '../auth/guard/jwt.guard';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -10,7 +11,22 @@ export class OrdersController {
   @UseGuards(JwtGuard)
   @Post()
   createOrder(@Body() createOrderDto: CreateOrderDto, @Request() req) {
-    // req.user contains the decoded JWT payload from your JwtStrategy
     return this.ordersService.createOrder(createOrderDto, req.user);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get()
+  findAll() {
+    return this.ordersService.findAllOrders();
+  }
+
+  
+  @UseGuards(JwtGuard)
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id') id: string, 
+    @Body() updateOrderStatusDto: UpdateOrderStatusDto
+  ) {
+    return this.ordersService.updateOrderStatus(+id, updateOrderStatusDto.status);
   }
 }

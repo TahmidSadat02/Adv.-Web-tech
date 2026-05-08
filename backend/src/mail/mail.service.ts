@@ -29,4 +29,17 @@ export class MailService {
       },
     });
   }
+
+  async sendOrderStatusUpdate(email: string, name: string, orderId: number, status: string) {
+    await this.mailerService.sendMail({
+      to: email,
+      subject: `Your Order is ${status.toUpperCase()} - #${orderId}`, // Required subject format
+      template: './order-status', 
+      context: { 
+        customerName: name,
+        orderId: orderId,
+        status: status,
+      },
+    });
+  }
 }
