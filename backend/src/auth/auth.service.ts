@@ -7,6 +7,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -35,6 +37,10 @@ export class AuthService {
 
     await this.userRepository.save(user);
 
+    this.mailService.sendWelcomeEmail(user.email, user.fullName).catch(err => {
+      console.error('Failed to send welcome email:', err);
+    });
+
     const { password: _, ...result } = user;
 
     return {
@@ -50,16 +56,16 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 2. Compare the hashed password
+    
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 3. Generate the JWT Payload
+    
     const payload = { sub: user.id, email: user.email, role: user.role };
 
-    // 4. Return the Token
+    
     return {
       message: 'Login successful',
       access_token: await this.jwtService.signAsync(payload),

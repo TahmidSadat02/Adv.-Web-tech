@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; }
+        .container { padding: 20px; border: 1px solid #eee; border-radius: 8px; max-width: 500px; margin: 0 auto;}
+        .header { background-color: #059669; color: white; padding: 10px; text-align: center; border-radius: 5px 5px 0 0; }
+        .total { font-size: 18px; font-weight: bold; color: #059669; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Order Confirmation</h2>
+        </div>
+        <p>Hi {{customerName}},</p>
+        <p>Thank you for your order! We are preparing your coffee right now.</p>
+        
+        <h3>Order ID: #{{orderId}}</h3>
+        <p class="total">Total Price: ${{totalPrice}}</p>
+        
+        <p>We will notify you when your order is ready!</p>
+    </div>
+</body>
+</html>

@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './auth/guard/jwt.guard';
 import { RolesGuard } from './auth/guard/roles.guard';
 import { MenuModule } from './menu/menu.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { MenuModule } from './menu/menu.module';
     UserModule,
     AuthModule,
     MenuModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [

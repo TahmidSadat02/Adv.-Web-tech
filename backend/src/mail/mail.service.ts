@@ -1,0 +1,31 @@
+import { MailerService } from '@nestjs-modules/mailer';
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class MailService {
+  constructor(private mailerService: MailerService) {}
+
+  async sendWelcomeEmail(email: string, name: string) {
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Welcome to CoffeeShop!',
+      template: './welcome', // Matches welcome.hbs
+      context: { 
+        name: name 
+      },
+    });
+  }
+
+  async sendOrderConfirmation(email: string, name: string, orderId: number, total: number) {
+    await this.mailerService.sendMail({
+      to: email,
+      subject: `Order Confirmation - #${orderId}`,
+      template: './order-confirmation', // Matches order-confirmation.hbs
+      context: { 
+        customerName: name,
+        orderId: orderId,
+        totalPrice: total.toFixed(2),
+      },
+    });
+  }
+}
