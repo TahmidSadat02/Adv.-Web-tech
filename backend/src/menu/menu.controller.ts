@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  Delete
 } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { Public } from '../auth/decorators/public.decorator';
@@ -40,5 +41,11 @@ export class MenuController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
     return this.menuService.update(id, updateMenuDto);
+  }
+
+  @UseGuards(JwtGuard)
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.menuService.remove(id);
   }
 }
