@@ -9,7 +9,7 @@ export default function Navbar() {
   return (
     <nav className="flex justify-between items-center py-5 px-10 bg-white border-b border-gray-200">
       {/* Brand / Logo */}
-      <div className="text-2xl font-bold text-gray-900">Coffee Shop Admin</div>
+      <div className="text-2xl font-bold text-gray-900">Coffee and Code</div>
 
       {/* Navigation Links */}
       <div className="flex gap-6 items-center">

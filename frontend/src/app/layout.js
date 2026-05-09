@@ -4,8 +4,8 @@ import GlobalNotification from './components/GlobalNotification';
 import './globals.css';
 
 export const metadata = {
-  title: 'Coffee Shop Admin',
-  description: 'Manage our coffee menu',
+  title: 'Coffee and Code',
+  description: 'Welcome to Coffee and Code - Your favorite coffee shop',
 };
 
 export default function RootLayout({ children }) {
