@@ -1,59 +1,68 @@
 "use client";
 import { useState, useContext } from 'react';
-import { AppContext } from '../context/AppContext';
 import api from '../lib/axios';
+import { AppContext } from '../context/AppContext';
 
 export default function AddMenuItem({ onAddSuccess }) {
-
-  const { token, triggerNotification } = useContext(AppContext);
+  
+  const { triggerNotification, categories } = useContext(AppContext);
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     setError('');
-    setLoading(true);
 
+    
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      setError('Price must be a valid positive number.');
+      setIsSubmitting(false);
+      return;
+    }
     try {
-      await api.post('/menu', {
+      
+      const payload = {
         name,
         description,
-        price: parseFloat(price), // Backend expects a number
+        price: parsedPrice,
         isAvailable: true
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      };
 
+      
+      if (categoryId) {
+        payload.categoryId = categoryId;
+      }
 
+      await api.post('/menu', payload);
+      
+      triggerNotification(`Successfully added ${name} to the menu!`);
+
+      
       setName('');
       setDescription('');
       setPrice('');
-      triggerNotification(`${name} was added to the menu!`);
-      if (onAddSuccess) onAddSuccess();
+      setCategoryId('');
       
-    } catch (err) {
-      const errorMessage = err.response?.data?.message;
-      if (Array.isArray(errorMessage)) {
-        setError(errorMessage.join(', '));
-      } else {
-        setError(errorMessage || err.message || 'Failed to add item');
+      if (onAddSuccess) {
+        onAddSuccess(); 
       }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add menu item');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const inputClass = "w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-500 focus:outline-none focus:border-emerald-600 transition-all";
-
   return (
     <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm mb-8">
-      <h3 className="text-xl font-bold text-gray-900 mb-6">Add New Menu Item</h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-6">Add New Item</h3>
       
       {error && (
         <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm font-bold border border-red-200">
@@ -61,50 +70,59 @@ export default function AddMenuItem({ onAddSuccess }) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 items-start">
-        <div className="w-full md:w-1/3">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <input
             type="text"
-            placeholder="Item Name (e.g., Choco Coffee)"
+            placeholder="Item Name (e.g. Mocha)"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className={inputClass}
+            className="p-4 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-all"
           />
-        </div>
-        
-        <div className="w-full md:w-1/3">
-          <input
-            type="text"
-            placeholder="Description (e.g., Joss)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-            className={inputClass}
-          />
-        </div>
-        
-        <div className="w-full md:w-1/6">
           <input
             type="number"
-            step="0.01"
-            placeholder="Price"
+            placeholder="Price (e.g. 4.50)"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             required
-            className={inputClass}
+            step="0.01"
+            min="0"
+            className="p-4 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-all"
           />
         </div>
 
-        <div className="w-full md:w-1/6">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-gray-900 hover:bg-black text-white font-bold rounded-lg transition-colors disabled:bg-gray-400"
+        {/* --- NEW: Category Dropdown --- */}
+        <div>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="w-full p-4 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-all cursor-pointer bg-white"
           >
-            {loading ? 'Adding...' : 'Add to Menu'}
-          </button>
+            <option value="">Select a Category (Optional)</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
         </div>
+
+        <textarea
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows="3"
+          className="p-4 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-all resize-none"
+        />
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full py-4 bg-gray-900 hover:bg-black text-white font-bold text-lg rounded-lg transition-colors disabled:bg-gray-400"
+        >
+          {isSubmitting ? 'Adding...' : 'Add Item'}
+        </button>
       </form>
     </div>
   );

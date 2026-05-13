@@ -12,9 +12,8 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   
-  // Category Form State
+  // Category Form State (Description removed!)
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryDesc, setNewCategoryDesc] = useState('');
 
   // Edit Form State
   const [editingItemId, setEditingItemId] = useState(null);
@@ -56,10 +55,10 @@ export default function AdminDashboard() {
   const handleCreateCategory = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/categories', { name: newCategoryName, description: newCategoryDesc });
+      // Description payload removed!
+      await api.post('/categories', { name: newCategoryName });
       triggerNotification(`Category "${newCategoryName}" created successfully.`);
       setNewCategoryName('');
-      setNewCategoryDesc('');
       fetchCategories(); 
     } catch (error) {
       triggerNotification(error.response?.data?.message || "Failed to create category.");
@@ -130,19 +129,13 @@ export default function AdminDashboard() {
         <form onSubmit={handleCreateCategory} className="flex gap-4 mb-6">
           <input 
             type="text" 
-            placeholder="Category Name (e.g. Hot Drinks)" 
+            placeholder="Category Name (e.g. Cakes)" 
             value={newCategoryName} 
             onChange={(e) => setNewCategoryName(e.target.value)}
             className="flex-1 p-3 border border-gray-300 rounded-lg text-black focus:outline-none focus:border-amber-500"
             required 
           />
-          <input 
-            type="text" 
-            placeholder="Description (Optional)" 
-            value={newCategoryDesc} 
-            onChange={(e) => setNewCategoryDesc(e.target.value)}
-            className="flex-1 p-3 border border-gray-300 rounded-lg text-black focus:outline-none focus:border-amber-500"
-          />
+          {/* Description input has been deleted from here! */}
           <button type="submit" className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition-colors">
             Add Category
           </button>
@@ -191,7 +184,7 @@ export default function AdminDashboard() {
                     <td className="py-4 px-4 text-gray-600 text-sm">
                       {order.items?.map(i => `${i.quantity}x ${i.menuItem?.name}`).join(', ')}
                     </td>
-                    <td className="py-4 px-4 text-emerald-600 font-bold">${Number(order.totalPrice).toFixed(2)}</td>
+                    <td className="py-4 px-4 text-emerald-600 font-bold">৳{Number(order.totalPrice).toFixed(2)}</td>
                     <td className="py-4 px-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
                         ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
@@ -276,7 +269,7 @@ export default function AdminDashboard() {
                           {item.category ? item.category.name : 'Uncategorized'}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-emerald-600 font-bold">${Number(item.price).toFixed(2)}</td>
+                      <td className="py-4 px-4 text-emerald-600 font-bold">৳{Number(item.price).toFixed(2)}</td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${item.isAvailable ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
                           {item.isAvailable ? 'Available' : 'Out of Stock'}

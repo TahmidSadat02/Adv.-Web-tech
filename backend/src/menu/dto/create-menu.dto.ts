@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateMenuDto {
   @IsString()
@@ -16,4 +16,8 @@ export class CreateMenuDto {
   @IsBoolean()
   @IsNotEmpty()
   isAvailable?: boolean;
+
+  @IsOptional()
+  @IsString() 
+  categoryId?: string;
 }

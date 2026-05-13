@@ -130,7 +130,7 @@ export default function MenuPage() {
                 <div>
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-xl font-bold text-gray-900">{item.name}</h3>
-                    <span className="text-emerald-600 font-bold text-lg">${Number(item.price).toFixed(2)}</span>
+                    <span className="text-emerald-600 font-bold text-lg">৳{Number(item.price).toFixed(2)}</span>
                   </div>
                   {item.category && (
                     <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded mb-3">
@@ -171,7 +171,7 @@ export default function MenuPage() {
                       ? 'Placing Order...' 
                       : !item.isAvailable 
                         ? 'Out of Stock' 
-                        : `Buy Now - $${(Number(item.price) * qty).toFixed(2)}`}
+                        : `Buy Now - ৳${(Number(item.price) * qty).toFixed(2)}`}
                   </button>
                 </div>
                 
