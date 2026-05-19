@@ -5,7 +5,7 @@ import { AppContext } from '../context/AppContext';
 import api from '../lib/axios';
 
 export default function ChangePasswordPage() {
-  const { token, logout } = useContext(AppContext);
+  const { token } = useContext(AppContext);
   const router = useRouter();
   
   const [oldPassword, setOldPassword] = useState('');
@@ -16,17 +16,23 @@ export default function ChangePasswordPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Security check: Kick them to login if they aren't logged in
+  
   useEffect(() => {
     if (!token) {
       router.push('/login');
     }
-  }, [token, router]);
+  }, [token]); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
+
+    
+    if (oldPassword === newPassword) {
+      setError('New password must be different from your current password.');
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
       setError('New passwords do not match!');
@@ -37,6 +43,7 @@ export default function ChangePasswordPage() {
       setError('New password must be at least 6 characters long.');
       return;
     }
+    
 
     setLoading(true);
 
@@ -60,7 +67,7 @@ export default function ChangePasswordPage() {
 
   const inputClass = "block w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-all";
 
-  // Don't render the form if they aren't logged in (prevents a brief flash before redirect)
+  
   if (!token) return null;
 
   return (
