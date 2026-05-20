@@ -17,6 +17,21 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
+    const validationErrors = [];
+
+    if (!email.trim()) {
+      validationErrors.push('Enter email first');
+    }
+
+    if (!password.trim()) {
+      validationErrors.push('Enter valid password first');
+    }
+
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join('\n'));
+      return;
+    }
+
     try {
       const response = await api.post('/auth/login', { email, password });
       const token = response.data.accessToken || response.data.access_token || response.data.token;
@@ -52,7 +67,7 @@ export default function LoginPage() {
         <p className="text-gray-600 text-center mb-8 font-medium">Sign in to your account.</p>
 
         {error && (
-          <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm font-bold text-center border border-red-200">
+          <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm font-bold text-center border border-red-200 whitespace-pre-line">
             {error}
           </div>
         )}
@@ -65,7 +80,6 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
-            required
             className={inputClass}
           />
 
@@ -77,7 +91,6 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
-              required
               className={inputClass}
             />
             {/* NEW: Forgot Password Link added here */}
